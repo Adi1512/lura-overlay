@@ -166,7 +166,7 @@
 <div id="shell">
 
   <div id="titlebar">
-    <span>⬡ Overlay</span>
+    <span>Lura Overlay</span>
     <div id="titlebar-right">
       <button id="settings-btn" title="Settings">⚙</button>
       <button id="close-btn" title="Close"></button>
@@ -270,7 +270,7 @@
     document.getElementById('btn-viewer').classList.toggle('active', m === 'viewer')
     document.getElementById('buttons').classList.toggle('hidden', m === 'viewer')
     document.getElementById('clear-btn').classList.toggle('hidden', m === 'viewer')
-    if (m === 'leader' && !leaderMap[MY_ID]) leaderMap[MY_ID] = { sequence: [], label: 'You' }
+    if (m === 'leader' && !leaderMap[MY_ID]) leaderMap[MY_ID] = { sequence: [] }
     if (m === 'viewer') { mySequence = []; updateMyEntry() }
     renderAll()
   }
@@ -289,7 +289,7 @@
   }
 
   function updateMyEntry() {
-    if (!leaderMap[MY_ID]) leaderMap[MY_ID] = { sequence: [], label: 'You' }
+    if (!leaderMap[MY_ID]) leaderMap[MY_ID] = { sequence: [] }
     leaderMap[MY_ID].sequence = [...mySequence]
   }
 
@@ -340,23 +340,24 @@
     document.querySelectorAll('.leader-row').forEach(r => r.remove())
     const container = document.getElementById('sequences')
     Object.entries(leaderMap).forEach(([id, { sequence, label }]) => {
-      if (mode === 'viewer' && id === MY_ID) return
-      const row = document.createElement('div')
-      row.className = 'seq-row leader-row'
-      const lbl = document.createElement('div')
-      lbl.className = 'seq-label' + (id === MY_ID ? ' me' : '')
-      lbl.textContent = id === MY_ID ? 'You' : label
-      row.appendChild(lbl)
-      const slots = document.createElement('div')
-      slots.className = 'seq-slots'
+      if(id !== MY_ID || mode === 'viewer') return;
+      
+      const row = document.createElement('div');
+      row.className = 'seq-row leader-row';
+      const lbl = document.createElement('div');
+      lbl.className = 'seq-label' + (id === MY_ID ? ' me' : '');
+      lbl.textContent = id === MY_ID ? 'You' : label;
+      row.appendChild(lbl);
+      const slots = document.createElement('div');
+      slots.className = 'seq-slots';
       for (let i = 0; i < SLOTS; i++) {
-        const v = sequence[i] !== undefined ? sequence[i] : null
-        const maj = majority[i]
-        const cls = v !== null && maj !== null && v !== maj ? 'conflict' : ''
-        slots.appendChild(makeImgSlot(v, cls))
+        const v = sequence[i] !== undefined ? sequence[i] : null;
+        const maj = majority[i];
+        const cls = v !== null && maj !== null && v !== maj ? 'conflict' : '';
+        slots.appendChild(makeImgSlot(v, cls));
       }
-      row.appendChild(slots)
-      container.appendChild(row)
+      row.appendChild(slots);
+      container.appendChild(row);
     })
   }
 
@@ -386,9 +387,9 @@
       ablyClient.connection.on('disconnected', () => setStatus('Ably: disconnected'))
       ablyClient.connection.on('failed', () => { setStatus('Ably: failed'); setKeyStatus('Connection failed — check key') })
       channel.subscribe('sequence', msg => {
-        const { id, sequence, label } = msg.data
+        const { id, sequence } = msg.data
         if (id === MY_ID) return
-        if (!leaderMap[id]) leaderMap[id] = { sequence: [], label }
+        if (!leaderMap[id]) leaderMap[id] = { sequence: [] }
         leaderMap[id].sequence = sequence
         renderAll()
       })
@@ -397,8 +398,7 @@
 
   function publish() {
     if (!channel) return
-    const otherCount = Object.keys(leaderMap).filter(k => k !== MY_ID).length
-    channel.publish('sequence', { id: MY_ID, label: `Leader ${otherCount + 1}`, sequence: mySequence })
+    channel.publish('sequence', { id: MY_ID, sequence: mySequence })
   }
 
   function setStatus(msg) { document.getElementById('status').textContent = msg }
@@ -425,7 +425,7 @@
   s.onerror = () => setStatus('Failed to load Ably SDK')
   document.head.appendChild(s)
 
-  leaderMap[MY_ID] = { sequence: [], label: 'You' }
+  leaderMap[MY_ID] = { sequence: [] }
   setMode('leader')
 </script>
 </body>
