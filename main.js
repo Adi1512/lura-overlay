@@ -31,4 +31,12 @@ ipcMain.on('move-window', (e, { x, y }) => {
   win.setPosition(wx + x, wy + y)
 })
 
+ipcMain.on('set-focusable', (event, focusable) => {
+  win.setFocusable(focusable)
+
+  if (focusable) {
+    win.focus()
+  }
+})
+
 ipcMain.on('close-app', () => app.quit())

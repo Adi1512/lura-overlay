@@ -254,6 +254,15 @@
     autoResize()
   })
 
+  ablyInput.addEventListener('click', () => {
+    ipcRenderer.send('set-focusable', true)
+    setTimeout(() => input.focus(), 50)
+  })
+
+  ablyInput.addEventListener('blur', () => {
+    ipcRenderer.send('set-focusable', false)
+  })
+
   function saveAblyKey() {
     const key = ablyInput.value.trim()
     if (!key) { setKeyStatus('Please enter a key'); return }
@@ -341,7 +350,7 @@
     const container = document.getElementById('sequences')
     Object.entries(leaderMap).forEach(([id, { sequence, label }]) => {
       if(id !== MY_ID || mode === 'viewer') return;
-      
+
       const row = document.createElement('div');
       row.className = 'seq-row leader-row';
       const lbl = document.createElement('div');
