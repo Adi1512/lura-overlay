@@ -1,6 +1,6 @@
 {
   "name": "lura-overlay",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -24,6 +24,11 @@
     "mac": {
       "target": "dir",
       "icon": "images/1.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "images/1.png",
+      "category": "Utility"
     }
   }
 }

@@ -11,6 +11,7 @@ app.whenReady().then(() => {
     transparent: true,
     resizable: false,
     skipTaskbar: false,
+    focusable: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
