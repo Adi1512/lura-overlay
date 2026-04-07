@@ -5,7 +5,10 @@ on:
     types: [created]
 
 jobs:
-  build:
+  build:    
+    permissions:
+      contents: write
+
     strategy:
       matrix:
         include:
@@ -35,9 +38,9 @@ jobs:
       - name: Upload artifacts to release
         uses: softprops/action-gh-release@v2
         with:
+          fail_on_unmatched_files: false
           files: |
             dist/*.exe
             dist/*.AppImage
-            dist/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
