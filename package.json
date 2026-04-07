@@ -21,10 +21,6 @@
       "target": "portable",
       "icon": "images/1.png"
     },
-    "mac": {
-      "target": "dmg",
-      "icon": "images/1.png"
-    },
     "linux": {
       "target": "AppImage",
       "icon": "images/1.png",
