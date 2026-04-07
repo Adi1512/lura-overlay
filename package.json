@@ -22,7 +22,7 @@
       "icon": "images/1.png"
     },
     "mac": {
-      "target": "dir",
+      "target": "dmg",
       "icon": "images/1.png"
     },
     "linux": {
