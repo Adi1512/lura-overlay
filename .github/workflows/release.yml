@@ -11,8 +11,6 @@ jobs:
         include:
           - os: windows-latest
             args: --win
-          - os: macos-latest
-            args: --mac
           - os: ubuntu-latest
             args: --linux
 
@@ -39,9 +37,7 @@ jobs:
         with:
           files: |
             dist/*.exe
-            dist/*.dmg
             dist/*.AppImage
             dist/*.deb
-            dist/mac/**/*.app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
