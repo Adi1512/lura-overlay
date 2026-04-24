@@ -3,183 +3,270 @@
 <head>
   <meta charset="UTF-8">
   <style>
+    /* ── Reset & base ─────────────────────────────────── */
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: transparent; width: 100%; height: 100%; }
 
-    body { background: transparent; margin: 0; }
+    /*
+      --s : scale factor = clientWidth / 360 (base design width).
+      Every size is expressed as calc(Xpx * var(--s)) so the whole
+      UI scales proportionally when the user resizes the window.
+    */
+    :root { --s: 1; }
 
     #shell {
-      width: 100%;
-      border-radius: 12px;
+      width: 100%; height: 100%;
+      border-radius: calc(12px * var(--s));
       border: 1px solid rgba(255,255,255,0.12);
       overflow: hidden;
       background: rgba(15, 15, 25, 0.88);
       color: #fff;
       font-family: sans-serif;
       user-select: none;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* ── Titlebar ── */
+    /* ── Titlebar ───────────────────────────────────────── */
     #titlebar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 7px 10px;
+      padding: calc(7px * var(--s)) calc(10px * var(--s));
       background: rgba(255,255,255,0.05);
       cursor: grab;
-      position: relative;
-      z-index: 2;
+      flex-shrink: 0;
     }
-    #titlebar span { font-size: 11px; opacity: 0.5; }
-    #titlebar-right { display: flex; align-items: center; gap: 8px; }
+    #titlebar-label { font-size: calc(11px * var(--s)); opacity: 0.5; }
+    #role-tag       { font-size: calc(10px * var(--s)); opacity: 0.55; }
+    #titlebar-right { display: flex; align-items: center; gap: calc(8px * var(--s)); }
     #settings-btn {
       background: none; border: none;
       color: rgba(255,255,255,0.4); cursor: pointer;
-      font-size: 14px; line-height: 1; padding: 0 2px;
+      font-size: calc(14px * var(--s)); line-height: 1;
+      padding: 0 calc(2px * var(--s));
       transition: color 0.15s;
     }
     #settings-btn:hover { color: rgba(255,255,255,0.85); }
     #close-btn {
-      background: #ff5f57; border: none;
-      border-radius: 50%; width: 12px; height: 12px;
+      background: #ff5f57; border: none; border-radius: 50%;
+      width: calc(12px * var(--s)); height: calc(12px * var(--s));
       cursor: pointer; flex-shrink: 0;
     }
 
-    /* ── Settings panel — in normal flow, shown/hidden ── */
+    /* ── Settings panel ─────────────────────────────────── */
     #settings-panel {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px 12px 12px;
+      display: none; flex-direction: column;
+      gap: calc(10px * var(--s));
+      padding: calc(10px * var(--s)) calc(12px * var(--s)) calc(12px * var(--s));
       background: rgba(15, 15, 25, 0.98);
       border-bottom: 1px solid rgba(255,255,255,0.07);
-      position: relative;
-      z-index: 10;
+      flex-shrink: 0;
     }
     #settings-panel.open { display: flex; }
 
-    .setting-row { display: flex; flex-direction: column; gap: 4px; }
+    .setting-row { display: flex; flex-direction: column; gap: calc(4px * var(--s)); }
     .setting-row label {
-      font-size: 10px; opacity: 0.5;
+      font-size: calc(10px * var(--s)); opacity: 0.5;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
-    #settings-mode-bar { display: flex; gap: 6px; }
+    /* Disabled state — applied to Person row in Viewer mode */
+    .setting-row.disabled { opacity: 0.3; pointer-events: none; }
+
+    #settings-mode-bar,
+    #settings-person-bar { display: flex; gap: calc(6px * var(--s)); }
+
     .mode-btn {
-      flex: 1; padding: 5px;
+      flex: 1; padding: calc(5px * var(--s));
       border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 6px; background: transparent;
-      color: rgba(255,255,255,0.4); font-size: 11px;
+      border-radius: calc(6px * var(--s));
+      background: transparent;
+      color: rgba(255,255,255,0.4);
+      font-size: calc(11px * var(--s));
       cursor: pointer; transition: all 0.15s;
     }
     .mode-btn.active {
       background: rgba(255,255,255,0.12);
       color: #fff; border-color: rgba(255,255,255,0.3);
     }
-    #ably-key-input-wrap { display: flex; gap: 6px; }
+
+    #ably-key-input-wrap { display: flex; gap: calc(6px * var(--s)); }
     #ably-key-input {
       flex: 1; background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 6px; color: #fff;
-      font-size: 11px; padding: 5px 8px; outline: none;
-      font-family: monospace;
+      border-radius: calc(6px * var(--s)); color: #fff;
+      font-size: calc(11px * var(--s));
+      padding: calc(5px * var(--s)) calc(8px * var(--s));
+      outline: none; font-family: monospace;
     }
     #ably-key-input::placeholder { color: rgba(255,255,255,0.25); }
     #ably-key-input:focus { border-color: rgba(79,142,247,0.6); }
     #save-key-btn {
-      padding: 5px 10px; border-radius: 6px;
+      padding: calc(5px * var(--s)) calc(10px * var(--s));
+      border-radius: calc(6px * var(--s));
       border: 1px solid rgba(79,142,247,0.4);
       background: rgba(79,142,247,0.15);
-      color: rgba(140,190,255,0.9); font-size: 11px;
+      color: rgba(140,190,255,0.9);
+      font-size: calc(11px * var(--s));
       cursor: pointer; transition: all 0.15s; white-space: nowrap;
     }
     #save-key-btn:hover { background: rgba(79,142,247,0.3); }
-    #key-status { font-size: 10px; opacity: 0.45; min-height: 14px; }
+    #key-status { font-size: calc(10px * var(--s)); opacity: 0.45; min-height: calc(14px * var(--s)); }
 
-    /* ── Main content — hidden behind settings when open ── */
-    #main-content { display: block; }
+    /* ── Main content ───────────────────────────────────── */
+    #main-content { display: flex; flex-direction: column; flex: 1; min-height: 0; }
     #main-content.settings-open { display: none; }
 
-    /* ── Image buttons ── */
+    /* ── Role picker (B/C) ──────────────────────────────── */
+    #role-picker {
+      display: none; flex-direction: column;
+      align-items: center; gap: calc(8px * var(--s));
+      padding: calc(14px * var(--s)) calc(12px * var(--s));
+    }
+    #role-picker.visible { display: flex; }
+    #role-picker p { font-size: calc(11px * var(--s)); opacity: 0.55; text-align: center; line-height: 1.4; }
+    #role-picker-btns { display: flex; gap: calc(8px * var(--s)); }
+    .role-pick-btn {
+      padding: calc(7px * var(--s)) calc(24px * var(--s));
+      border-radius: calc(8px * var(--s));
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.07);
+      color: #fff; font-size: calc(13px * var(--s)); font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .role-pick-btn:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); }
+    .role-pick-btn.pick-b { border-color: rgba(79,142,247,0.5); }
+    .role-pick-btn.pick-b:hover { background: rgba(79,142,247,0.2); }
+    .role-pick-btn.pick-c { border-color: rgba(168,107,247,0.5); }
+    .role-pick-btn.pick-c:hover { background: rgba(168,107,247,0.2); }
+
+    /* ── Input button bar ───────────────────────────────── */
     #buttons {
-      display: flex; gap: 6px;
-      padding: 8px 10px; justify-content: center;
+      display: flex; align-items: center;
+      gap: calc(5px * var(--s));
+      /* left indent mirrors seq-label width + gap so symbols align with slots */
+      padding: calc(8px * var(--s)) calc(10px * var(--s)) calc(8px * var(--s)) calc(60px * var(--s));
+      flex-shrink: 0;
     }
     #buttons.hidden { display: none; }
+
+    /* Symbol buttons grow to fill available space equally */
     .img-btn {
-      width: 54px; height: 54px; border-radius: 8px;
-      border: 2px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.07);
+      flex: 1; min-width: 0;
+      aspect-ratio: 1 / 1;
+      border-radius: calc(7px * var(--s));
+      border: 1px solid rgba(255,255,255,0.13);
+      background: rgba(255,255,255,0.06);
       cursor: pointer; transition: all 0.1s;
       padding: 0; overflow: hidden;
     }
-    .img-btn img {
-      width: 100%; height: 100%;
-      object-fit: cover; display: block; pointer-events: none;
-    }
-    .img-btn:hover:not(:disabled) {
-      border-color: rgba(255,255,255,0.4); transform: scale(1.05);
-    }
-    .img-btn.selected {
-      border-color: #4f8ef7; box-shadow: 0 0 8px rgba(79,142,247,0.5);
-    }
-    .img-btn:disabled { opacity: 0.3; cursor: default; }
+    .img-btn img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    .img-btn:hover         { border-color: rgba(255,255,255,0.4); transform: scale(1.05); }
+    .img-btn:disabled      { opacity: 0.25; cursor: default; transform: none; }
 
-    /* ── Sequence rows ── */
-    #sequences { padding: 4px 10px 6px; display: flex; flex-direction: column; gap: 4px; }
-    .seq-row { display: flex; align-items: center; gap: 6px; }
+    .back-btn {
+      flex-shrink: 0;
+      width: calc(36px * var(--s)); height: calc(36px * var(--s));
+      border-radius: calc(7px * var(--s));
+      border: 1px solid rgba(255,100,100,0.35);
+      background: rgba(255,100,100,0.08);
+      color: rgba(255,130,130,0.9); font-size: calc(15px * var(--s));
+      cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center;
+      margin-left: calc(2px * var(--s));
+    }
+    .back-btn:hover    { background: rgba(255,100,100,0.22); border-color: rgba(255,100,100,0.6); }
+    .back-btn:disabled { opacity: 0.2; cursor: default; background: rgba(255,100,100,0.04); }
+
+    /* ── Sequence rows ──────────────────────────────────── */
+    #sequences {
+      padding: calc(4px * var(--s)) calc(10px * var(--s)) calc(6px * var(--s));
+      display: flex; flex-direction: column;
+      gap: calc(4px * var(--s));
+      flex-shrink: 0;
+    }
+    .seq-row   { display: flex; align-items: center; gap: calc(6px * var(--s)); }
     .seq-label {
-      font-size: 10px; opacity: 0.4;
-      width: 44px; text-align: right; flex-shrink: 0;
+      font-size: calc(10px * var(--s)); opacity: 0.4;
+      width: calc(44px * var(--s)); text-align: right; flex-shrink: 0;
     }
     .seq-label.me { opacity: 0.7; color: #4f8ef7; }
-    .seq-slots { display: flex; gap: 4px; }
+
+    /* Slots fill the row equally */
+    .seq-slots { display: flex; gap: calc(4px * var(--s)); flex: 1; min-width: 0; }
     .slot {
-      width: 36px; height: 36px; border-radius: 6px;
+      flex: 1; min-width: 0;
+      aspect-ratio: 1 / 1;
+      border-radius: calc(6px * var(--s));
       border: 1px solid rgba(255,255,255,0.1);
       background: rgba(255,255,255,0.05);
       overflow: hidden; display: flex;
       align-items: center; justify-content: center;
     }
-    .slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .slot.empty { background: rgba(255,255,255,0.04); }
-    .slot.majority { border-color: #4fe77a; box-shadow: 0 0 6px rgba(79,231,122,0.3); }
-    .slot.conflict  { border-color: rgba(247,162,79,0.6); box-shadow: 0 0 6px rgba(247,162,79,0.2); }
+    .slot img     { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .slot.empty   { background: rgba(255,255,255,0.04); }
+    .slot.majority  { border-color: #4fe77a;              box-shadow: 0 0 calc(6px * var(--s)) rgba(79,231,122,0.3); }
+    .slot.predicted { border-color: rgba(255,210,80,0.7); box-shadow: 0 0 calc(6px * var(--s)) rgba(255,210,80,0.25); }
+    .slot.conflict  { border-color: rgba(247,162,79,0.6); box-shadow: 0 0 calc(6px * var(--s)) rgba(247,162,79,0.2); }
+    .slot.foreign   { opacity: 0.25; }
 
-    hr { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 2px 10px; }
+    hr { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: calc(2px * var(--s)) calc(10px * var(--s)); }
 
+    /* ── Bottom bar ─────────────────────────────────────── */
     #bottom-bar {
       display: flex; align-items: center;
-      justify-content: space-between; padding: 4px 10px 8px;
+      justify-content: space-between;
+      padding: calc(4px * var(--s)) calc(10px * var(--s)) calc(8px * var(--s));
+      flex-shrink: 0;
     }
-    #status { font-size: 10px; opacity: 0.35; }
+    #status   { font-size: calc(10px * var(--s)); opacity: 0.35; }
     #clear-btn {
-      padding: 4px 10px; border-radius: 6px;
+      padding: calc(4px * var(--s)) calc(10px * var(--s));
+      border-radius: calc(6px * var(--s));
       border: 1px solid rgba(255,100,100,0.4);
       background: rgba(255,100,100,0.1);
-      color: rgba(255,120,120,0.9); font-size: 11px;
+      color: rgba(255,120,120,0.9); font-size: calc(11px * var(--s));
       cursor: pointer; transition: all 0.15s;
     }
-    #clear-btn:hover { background: rgba(255,100,100,0.25); }
+    #clear-btn:hover  { background: rgba(255,100,100,0.25); }
     #clear-btn.hidden { display: none; }
+
+    /* ── Resize handle (bottom-right corner) ────────────── */
+    #resize-handle {
+      position: fixed; bottom: 5px; right: 5px;
+      width: calc(14px * var(--s)); height: calc(14px * var(--s));
+      cursor: se-resize; opacity: 0.2; transition: opacity 0.15s;
+      border-right: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      border-radius: 0 0 3px 0;
+    }
+    #resize-handle:hover { opacity: 0.55; }
   </style>
 </head>
 <body>
 <div id="shell">
 
   <div id="titlebar">
-    <span>Lura Overlay</span>
+    <span id="titlebar-label">Lura Overlay <span id="role-tag"></span></span>
     <div id="titlebar-right">
       <button id="settings-btn" title="Settings">⚙</button>
       <button id="close-btn" title="Close"></button>
     </div>
   </div>
 
-  <!-- Settings in normal flow — pushes nothing since main-content hides -->
   <div id="settings-panel">
     <div class="setting-row">
       <label>Mode</label>
       <div id="settings-mode-bar">
         <button class="mode-btn active" id="btn-leader" onclick="setMode('leader')">Leader</button>
-        <button class="mode-btn" id="btn-viewer" onclick="setMode('viewer')">Viewer</button>
+        <button class="mode-btn"        id="btn-viewer" onclick="setMode('viewer')">Viewer</button>
+      </div>
+    </div>
+    <div class="setting-row" id="person-setting-row">
+      <label>Person</label>
+      <div id="settings-person-bar">
+        <button class="mode-btn active" id="btn-person-a"  onclick="setPersonType('A')">Person A</button>
+        <button class="mode-btn"        id="btn-person-bc" onclick="setPersonType('BC')">Person B / C</button>
       </div>
     </div>
     <div class="setting-row">
@@ -192,15 +279,18 @@
     </div>
   </div>
 
-  <!-- Main content hidden while settings open -->
   <div id="main-content">
-    <div id="buttons">
-      <button class="img-btn" onclick="handleClick(1)"><img src="images/1.png" alt="1"></button>
-      <button class="img-btn" onclick="handleClick(2)"><img src="images/2.png" alt="2"></button>
-      <button class="img-btn" onclick="handleClick(3)"><img src="images/3.png" alt="3"></button>
-      <button class="img-btn" onclick="handleClick(4)"><img src="images/4.png" alt="4"></button>
-      <button class="img-btn" onclick="handleClick(5)"><img src="images/5.png" alt="5"></button>
+
+    <div id="role-picker">
+      <p>Are you Person B or C this round?</p>
+      <div id="role-picker-btns">
+        <button class="role-pick-btn pick-b" onclick="pickRole('B')">B</button>
+        <button class="role-pick-btn pick-c" onclick="pickRole('C')">C</button>
+      </div>
     </div>
+
+    <div id="buttons"></div>
+
     <div id="sequences">
       <div class="seq-row" id="majority-row">
         <div class="seq-label"></div>
@@ -208,28 +298,48 @@
       </div>
       <hr>
     </div>
+
     <div id="bottom-bar">
       <div id="status">Ably: not connected</div>
       <button id="clear-btn" onclick="clearSequence()">Clear</button>
     </div>
+
   </div>
+
+  <div id="resize-handle"></div>
 
 </div>
 <script>
   const { ipcRenderer } = require('electron')
 
-  const CHANNEL   = 'overlay-sequence'
-  const SLOTS     = 5
-  const IMG       = n => `images/${n}.png`
-  const KEY_STORE = 'overlay_ably_key'
-  const ID_STORE  = 'overlay_leader_id'
+  ipcRenderer.on('window-size', (e, [w, h]) => {
+    document.documentElement.style.setProperty('--s', (w / BASE_W).toFixed(4))
+  });
 
-  let mode = 'leader'
+  const CHANNEL     = 'overlay-sequence'
+  const SLOTS       = 5
+  const ALL_SYMS    = [1, 2, 3, 4, 5]
+  const IMG         = n => `images/${n}.png`
+  const KEY_STORE   = 'overlay_ably_key'
+  const ID_STORE    = 'overlay_leader_id'
+  const PTYPE_STORE = 'overlay_person_type'
+  const ROLE_STORE  = 'overlay_bc_role'
+  const SIZE_STORE  = 'overlay_window_size'
+
+  const ROLE_SLOTS = { A: [1, 4], B: [2, 5], C: [3] }
+  const BASE_W     = 360   // px at --s:1
+
+  // ── State ─────────────────────────────────────────────
+  let mode       = 'leader'
+  let personType = localStorage.getItem(PTYPE_STORE) || 'A'
+  let myRole     = null
   let settingsOpen = false
-  let mySequence = []
-  let leaderMap = {}
+  let mySequence = {}
+  let peerMap    = {}
   let ablyClient = null
-  let channel = null
+  let channel    = null
+  let dragging   = false
+  let resizing   = false
 
   const MY_ID = (() => {
     let id = localStorage.getItem(ID_STORE)
@@ -237,7 +347,9 @@
     return id
   })()
 
-  // ── Settings ──────────────────────────────────────────
+  if (personType === 'A') myRole = 'A'
+
+  // ── Settings ───────────────────────────────────────────
   const settingsBtn   = document.getElementById('settings-btn')
   const settingsPanel = document.getElementById('settings-panel')
   const mainContent   = document.getElementById('main-content')
@@ -250,18 +362,12 @@
     if (settingsOpen) {
       const stored = localStorage.getItem(KEY_STORE)
       if (stored) ablyInput.value = stored
+      syncPersonButtons()
     }
-    autoResize()
   })
 
-  ablyInput.addEventListener('click', () => {
-    ipcRenderer.send('set-focusable', true)
-    setTimeout(() => input.focus(), 50)
-  })
-
-  ablyInput.addEventListener('blur', () => {
-    ipcRenderer.send('set-focusable', false)
-  })
+  ablyInput.addEventListener('click', () => { ipcRenderer.send('set-focusable', true); setTimeout(() => ablyInput.focus(), 50) })
+  ablyInput.addEventListener('blur',  () => ipcRenderer.send('set-focusable', false))
 
   function saveAblyKey() {
     const key = ablyInput.value.trim()
@@ -272,60 +378,129 @@
   }
   function setKeyStatus(msg) { document.getElementById('key-status').textContent = msg }
 
-  // ── Mode ──────────────────────────────────────────────
+  // ── Person type ────────────────────────────────────────
+  function setPersonType(pt) {
+    personType = pt
+    localStorage.setItem(PTYPE_STORE, pt)
+    myRole = (pt === 'A') ? 'A' : null
+    if (pt !== 'A') localStorage.removeItem(ROLE_STORE)
+    syncPersonButtons(); applyRoleState(); renderAll()
+  }
+
+  function syncPersonButtons() {
+    document.getElementById('btn-person-a').classList.toggle('active',  personType === 'A')
+    document.getElementById('btn-person-bc').classList.toggle('active', personType === 'BC')
+    // Grey-out & disable Person row when in Viewer mode
+    document.getElementById('person-setting-row').classList.toggle('disabled', mode === 'viewer')
+  }
+
+  // ── Role picker ────────────────────────────────────────
+  function pickRole(r) {
+    myRole = r
+    localStorage.setItem(ROLE_STORE, r)
+    applyRoleState(); renderAll()
+  }
+
+  function applyRoleState() {
+    const picker   = document.getElementById('role-picker')
+    const buttons  = document.getElementById('buttons')
+    const clearBtn = document.getElementById('clear-btn')
+    const roleTag  = document.getElementById('role-tag')
+
+    const needsPick = (personType === 'BC' && myRole === null)
+    const isViewer  = (mode === 'viewer')
+
+    picker.classList.toggle('visible',  needsPick && !isViewer)
+    buttons.classList.toggle('hidden',  needsPick || isViewer)
+    clearBtn.classList.toggle('hidden', needsPick || isViewer)
+
+    roleTag.textContent = myRole ? `· ${myRole}` : (personType === 'BC' ? '· B/C' : '')
+
+    buildInputButtons()
+  }
+
+  // ── Mode ───────────────────────────────────────────────
   function setMode(m) {
     mode = m
     document.getElementById('btn-leader').classList.toggle('active', m === 'leader')
     document.getElementById('btn-viewer').classList.toggle('active', m === 'viewer')
-    document.getElementById('buttons').classList.toggle('hidden', m === 'viewer')
-    document.getElementById('clear-btn').classList.toggle('hidden', m === 'viewer')
-    if (m === 'leader' && !leaderMap[MY_ID]) leaderMap[MY_ID] = { sequence: [] }
-    if (m === 'viewer') { mySequence = []; updateMyEntry() }
-    renderAll()
+    if (m === 'viewer') mySequence = {}
+    syncPersonButtons(); applyRoleState(); renderAll()
   }
 
-  // ── Button logic ──────────────────────────────────────
-  function handleClick(n) {
-    if (mode !== 'leader') return
-    if (mySequence.length >= SLOTS) return
-    mySequence.push(n)
-    updateMyEntry(); renderAll(); publish()
+  // ── Input buttons ──────────────────────────────────────
+  function buildInputButtons() {
+    const container = document.getElementById('buttons')
+    container.innerHTML = ''
+    if (!myRole || mode === 'viewer') return
+
+    const mySlots = ROLE_SLOTS[myRole]
+    const filled  = mySlots.filter(s => mySequence[s] !== undefined)
+    const allFull = filled.length === mySlots.length
+
+    ALL_SYMS.forEach(sym => {
+      const btn = document.createElement('button')
+      btn.className = 'img-btn'
+      btn.disabled  = allFull
+      btn.onclick   = () => handleClick(sym)
+      const img = document.createElement('img')
+      img.src = IMG(sym); img.alt = sym
+      btn.appendChild(img)
+      container.appendChild(btn)
+    })
+
+    const back = document.createElement('button')
+    back.className   = 'back-btn'
+    back.title       = 'Undo last'
+    back.textContent = '⌫'
+    back.disabled    = filled.length === 0
+    back.onclick     = () => {
+      delete mySequence[filled[filled.length - 1]]
+      buildInputButtons(); renderAll(); publish()
+    }
+    container.appendChild(back)
+  }
+
+  // ── Button logic ───────────────────────────────────────
+  function handleClick(sym) {
+    if (mode !== 'leader' || !myRole) return
+    const nextSlot = ROLE_SLOTS[myRole].find(s => mySequence[s] === undefined)
+    if (nextSlot === undefined) return
+    mySequence[nextSlot] = sym
+    buildInputButtons(); renderAll(); publish()
   }
 
   function clearSequence() {
-    mySequence = []
-    updateMyEntry(); renderAll(); publish()
+    mySequence = {}
+    if (personType === 'BC') { myRole = null; localStorage.removeItem(ROLE_STORE) }
+    applyRoleState(); buildInputButtons(); renderAll(); publish()
   }
 
-  function updateMyEntry() {
-    if (!leaderMap[MY_ID]) leaderMap[MY_ID] = { sequence: [] }
-    leaderMap[MY_ID].sequence = [...mySequence]
-  }
-
-  // ── Majority ──────────────────────────────────────────
-  function computeMajority() {
-    const leaders = Object.values(leaderMap)
-    if (!leaders.length) return Array(SLOTS).fill(null)
-    return Array.from({ length: SLOTS }, (_, pos) => {
-      const votes = {}
-      leaders.forEach(({ sequence }) => {
-        const v = sequence[pos]
-        if (v !== undefined) votes[v] = (votes[v] || 0) + 1
-      })
-      if (!Object.keys(votes).length) return null
-      const max = Math.max(...Object.values(votes))
-      const winners = Object.keys(votes).filter(k => votes[k] === max)
-      return winners.length === 1 ? parseInt(winners[0]) : null
+  // ── Assemble + predict ─────────────────────────────────
+  function assembleSequence() {
+    const seq = Array(SLOTS).fill(null)
+    if (myRole) Object.entries(mySequence).forEach(([si, sv]) => { seq[+si - 1] = sv })
+    Object.values(peerMap).forEach(({ role, slots }) => {
+      if (!role || !slots) return
+      Object.entries(slots).forEach(([si, sv]) => { seq[+si - 1] = sv })
     })
+    return seq
   }
 
-  // ── Render ────────────────────────────────────────────
+  function predict(seq) {
+    const filled = seq.filter(v => v !== null)
+    if (filled.length !== 4) return seq
+    const missing = ALL_SYMS.find(s => !new Set(filled).has(s))
+    if (missing === undefined) return seq
+    return seq.map(v => v === null ? missing : v)
+  }
+
+  // ── Render ─────────────────────────────────────────────
   function renderAll() {
-    const majority = computeMajority()
-    renderMajority(majority)
-    renderLeaderRows(majority)
-    renderInputButtons()
-    autoResize()
+    const raw  = assembleSequence()
+    const full = predict(raw)
+    renderMajority(full, raw)
+    renderMyRow(full)
   }
 
   function makeImgSlot(value, extraClass) {
@@ -339,91 +514,109 @@
     return d
   }
 
-  function renderMajority(majority) {
+  function renderMajority(full, raw) {
     const el = document.getElementById('majority-slots')
     el.innerHTML = ''
-    majority.forEach(v => el.appendChild(makeImgSlot(v, v !== null ? 'majority' : '')))
+    full.forEach((v, i) => {
+      const predicted = raw[i] === null && v !== null
+      el.appendChild(makeImgSlot(v, v !== null ? (predicted ? 'predicted' : 'majority') : ''))
+    })
   }
 
-  function renderLeaderRows(majority) {
+  function renderMyRow(full) {
     document.querySelectorAll('.leader-row').forEach(r => r.remove())
+    if (mode === 'viewer' || !myRole) return
     const container = document.getElementById('sequences')
-    Object.entries(leaderMap).forEach(([id, { sequence, label }]) => {
-      if(id !== MY_ID || mode === 'viewer') return;
+    const mySlots   = ROLE_SLOTS[myRole]
 
-      const row = document.createElement('div');
-      row.className = 'seq-row leader-row';
-      const lbl = document.createElement('div');
-      lbl.className = 'seq-label' + (id === MY_ID ? ' me' : '');
-      lbl.textContent = id === MY_ID ? 'You' : label;
-      row.appendChild(lbl);
-      const slots = document.createElement('div');
-      slots.className = 'seq-slots';
-      for (let i = 0; i < SLOTS; i++) {
-        const v = sequence[i] !== undefined ? sequence[i] : null;
-        const maj = majority[i];
-        const cls = v !== null && maj !== null && v !== maj ? 'conflict' : '';
-        slots.appendChild(makeImgSlot(v, cls));
-      }
-      row.appendChild(slots);
-      container.appendChild(row);
-    })
+    const row   = document.createElement('div'); row.className = 'seq-row leader-row'
+    const lbl   = document.createElement('div'); lbl.className = 'seq-label me'; lbl.textContent = `You (${myRole})`
+    const slots = document.createElement('div'); slots.className = 'seq-slots'
+
+    for (let i = 0; i < SLOTS; i++) {
+      const owned = mySlots.includes(i + 1)
+      slots.appendChild(makeImgSlot(
+        owned ? (mySequence[i + 1] ?? null) : full[i],
+        owned ? '' : 'foreign'
+      ))
+    }
+
+    row.appendChild(lbl); row.appendChild(slots)
+    container.appendChild(row)
   }
 
-  function renderInputButtons() {
-    const used = new Set(mySequence)
-    document.querySelectorAll('.img-btn').forEach((b, i) => {
-      b.classList.toggle('selected', used.has(i + 1))
-    })
-  }
-
-  // ── Resize ────────────────────────────────────────────
-  function autoResize() {
-    requestAnimationFrame(() => {
-      const h = document.getElementById('shell').offsetHeight
-      const w = document.getElementById('shell').offsetWidth
-      ipcRenderer.send('resize-window', { width: w, height: h })
-    })
-  }
-
-  // ── Ably ──────────────────────────────────────────────
+  // ── Ably ───────────────────────────────────────────────
   function connectAbly(key) {
     if (ablyClient) { try { ablyClient.close() } catch(e) {} }
     try {
       ablyClient = new Ably.Realtime({ key })
       channel = ablyClient.channels.get(CHANNEL)
-      ablyClient.connection.on('connected', () => { setStatus('Ably: connected ✓'); setKeyStatus('Connected ✓') })
+      ablyClient.connection.on('connected',    () => { setStatus('Ably: connected ✓'); setKeyStatus('Connected ✓') })
       ablyClient.connection.on('disconnected', () => setStatus('Ably: disconnected'))
-      ablyClient.connection.on('failed', () => { setStatus('Ably: failed'); setKeyStatus('Connection failed — check key') })
+      ablyClient.connection.on('failed',       () => { setStatus('Ably: failed'); setKeyStatus('Connection failed — check key') })
       channel.subscribe('sequence', msg => {
-        const { id, sequence } = msg.data
+        const { id, role, slots } = msg.data
         if (id === MY_ID) return
-        if (!leaderMap[id]) leaderMap[id] = { sequence: [] }
-        leaderMap[id].sequence = sequence
+        if (!peerMap[id]) peerMap[id] = {}
+        peerMap[id].role = role; peerMap[id].slots = slots
         renderAll()
       })
     } catch(e) { setStatus('Ably error'); setKeyStatus('Error — check key format') }
   }
 
   function publish() {
-    if (!channel) return
-    channel.publish('sequence', { id: MY_ID, sequence: mySequence })
+    if (!channel || !myRole) return
+    channel.publish('sequence', { id: MY_ID, role: myRole, slots: mySequence })
   }
 
   function setStatus(msg) { document.getElementById('status').textContent = msg }
 
-  // ── Dragging ──────────────────────────────────────────
-  let dragging = false, startX, startY
-  document.getElementById('titlebar').addEventListener('mousedown', e => { dragging = true; startX = e.screenX; startY = e.screenY })
+  // ── Drag to move ───────────────────────────────────────
+  let startX, startY
+  document.getElementById('titlebar').addEventListener('mousedown', e => {
+    if (resizing) return
+    dragging = true; startX = e.screenX; startY = e.screenY
+  })
   document.addEventListener('mousemove', e => {
     if (!dragging) return
     ipcRenderer.send('move-window', { x: e.screenX - startX, y: e.screenY - startY })
     startX = e.screenX; startY = e.screenY
   })
-  document.addEventListener('mouseup', () => dragging = false)
+  document.addEventListener('mouseup', () => { dragging = false })
   document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('close-app'))
 
-  // ── Boot ──────────────────────────────────────────────
+  // ── Resize handle ──────────────────────────────────────
+  let resizeStartX, resizeStartY, resizeStartW, resizeStartH
+
+  document.getElementById('resize-handle').addEventListener('mousedown', e => {
+    e.stopPropagation()
+    resizing     = true
+    resizeStartX = e.screenX
+    resizeStartY = e.screenY
+    resizeStartW = document.documentElement.clientWidth
+    resizeStartH = document.documentElement.clientHeight
+  })
+
+  document.addEventListener('mousemove', e => {
+    if (!resizing) return
+    const newW = Math.max(280, resizeStartW + (e.screenX - resizeStartX))
+    const newH = Math.max(140, resizeStartH + (e.screenY - resizeStartY))
+
+    const roundedW = Math.round(newW);
+
+    ipcRenderer.send('resize-window', { width: roundedW, height: Math.round(newH) })
+  })
+
+  document.addEventListener('mouseup', () => {
+    if (!resizing) return
+    resizing = false
+    localStorage.setItem(SIZE_STORE, JSON.stringify({
+      w: document.documentElement.clientWidth,
+      h: document.documentElement.clientHeight
+    }))
+  })
+
+  // ── Boot ───────────────────────────────────────────────
   const s = document.createElement('script')
   s.src = 'https://cdn.ably.com/lib/ably.min-2.js'
   s.onload = () => {
@@ -434,9 +627,17 @@
   s.onerror = () => setStatus('Failed to load Ably SDK')
   document.head.appendChild(s)
 
-  leaderMap[MY_ID] = { sequence: [] }
-  setMode('leader')
+  localStorage.removeItem(ROLE_STORE)
+
+  // Restore saved window size
+  try {
+    const saved = JSON.parse(localStorage.getItem(SIZE_STORE) || 'null')
+    if (saved) ipcRenderer.send('resize-window', { width: saved.w, height: saved.h })
+  } catch(e) {}
+
+  syncPersonButtons()
+  applyRoleState()
+  renderAll()
 </script>
 </body>
 </html>
- 

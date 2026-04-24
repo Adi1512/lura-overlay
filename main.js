@@ -6,10 +6,11 @@ app.whenReady().then(() => {
   win = new BrowserWindow({
     width: 360,
     height: 220,
+    useContentSize: true,
     alwaysOnTop: true,
     frame: false,
     transparent: true,
-    resizable: false,
+    resizable: true,
     skipTaskbar: false,
     focusable: false,
     webPreferences: {
@@ -20,10 +21,15 @@ app.whenReady().then(() => {
 
   win.loadFile('index.html')
   win.setAlwaysOnTop(true, 'screen-saver')
+  
+  win.webContents.on('did-finish-load', () => {
+  win.webContents.send('window-size', win.getSize())
+})
 })
 
 ipcMain.on('resize-window', (e, { width, height }) => {
   win.setSize(width, height)
+  win.webContents.send('window-size', win.getSize())
 })
 
 ipcMain.on('move-window', (e, { x, y }) => {
@@ -37,6 +43,10 @@ ipcMain.on('set-focusable', (event, focusable) => {
   if (focusable) {
     win.focus()
   }
+})
+
+ipcMain.on('get-window-size', (e) => {
+  e.reply('window-size', win.getSize())
 })
 
 ipcMain.on('close-app', () => app.quit())
