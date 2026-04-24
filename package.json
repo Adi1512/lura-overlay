@@ -1,6 +1,6 @@
 {
   "name": "lura-overlay",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -16,7 +16,7 @@
   "build": {
     "appId": "adi.lura.overlay",
     "productName": "Lura Overlay",
-    "files": ["main.js", "index.html", "images/**"],
+    "files": ["main.js", "index.html", "styles.css", "images/**"],
     "win": {
       "target": "portable",
       "icon": "images/1.png"
