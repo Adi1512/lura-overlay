@@ -29,11 +29,6 @@ app.whenReady().then(() => {
 
   win.setAlwaysOnTop(true, 'screen-saver')
   win.setMinimumSize(100, 60)
-
-  win.webContents.on('did-finish-load', () => {
-    const { width, height } = win.getContentBounds()
-    win.webContents.send('window-size', [width, height])
-  })
 })
 
 // ── Fit window to content height (called by renderer after layout changes) ──
@@ -56,6 +51,15 @@ ipcMain.on('fit-width', (e, { baseW }) => {
   const newW = Math.round(baseW * currentScale)
   const newH = Math.round(currentBaseH * currentScale)
   win.setContentBounds({ x, y, width: newW, height: newH })
+  win.webContents.send('window-size', [newW, newH])
+})
+
+ipcMain.on('resize-startup', (e, { scale, baseW }) => {
+  const newW = Math.round(baseW * scale)
+  const newH = Math.round(currentBaseH * scale)
+
+  const current = win.getContentBounds()
+  win.setContentBounds({ x: current.x, y: current.y, width: newW, height: newH })
   win.webContents.send('window-size', [newW, newH])
 })
 

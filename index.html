@@ -34,7 +34,7 @@
       <label>Layout</label>
       <div id="settings-layout-bar">
         <button class="mode-btn active" id="btn-layout-line"  onclick="setLayout('line')">Line</button>
-        <button class="mode-btn"        id="btn-layout-clock" onclick="setLayout('clock')">Clock</button>
+        <button class="mode-btn"        id="btn-layout-clock" onclick="setLayout('clock')">Cock</button>
       </div>
     </div>
     <div class="setting-row" id="person-setting-row">
@@ -95,10 +95,7 @@
   const IMG          = n => `images/${n}.png`
   const KEY_STORE    = 'overlay_ably_key'
   const ID_STORE     = 'overlay_leader_id'
-  const PTYPE_STORE  = 'overlay_person_type'
-  const ROLE_STORE   = 'overlay_bc_role'
-  const DIFF_STORE   = 'overlay_difficulty'
-  const LAYOUT_STORE = 'overlay_layout'
+  const SCALE_STORE  = 'overlay_scale'
 
   // Slot ownership by phase:
   //   T (Tank) owns slots 1 & 4
@@ -128,9 +125,9 @@
 
   // ── State ─────────────────────────────────────────────
   let mode       = 'viewer'
-  let difficulty = readEnum(DIFF_STORE,   ALLOWED_DIFF,   'M')
-  let personType = readEnum(PTYPE_STORE,  ALLOWED_PTYPE,  'tank')
-  let layout     = readEnum(LAYOUT_STORE, ALLOWED_LAYOUT, 'line')
+  let difficulty = 'M'
+  let personType = 'tank'
+  let layout     =  'line'
   let myRole     = null
   let settingsOpen = false
   let mySequence = {}
@@ -148,8 +145,11 @@
   if (personType === 'tank') myRole = 'T'
 
   // ── Scale factor from window size ─────────────────────
-  ipcRenderer.on('window-size', (e, [w]) => {
-    document.documentElement.style.setProperty('--s', (w / BASE_W).toFixed(4))
+  ipcRenderer.on('window-size', (e, [w, h]) => {
+    document.documentElement.style.setProperty('--s', (w / BASE_W).toFixed(4));
+
+    const newScale = w / BASE_W;
+    localStorage.setItem(SCALE_STORE, newScale);
   })
 
   // ── Fit window to content ──────────────────────────────
@@ -213,7 +213,6 @@
   // ── Layout (viewer-only) ───────────────────────────────
   function setLayout(l) {
     layout = l
-    localStorage.setItem(LAYOUT_STORE, l)
     syncLayoutButtons()
     renderAll()
   }
@@ -226,11 +225,9 @@
   // ── Difficulty ─────────────────────────────────────────
   function setDifficulty(d) {
     difficulty = d
-    localStorage.setItem(DIFF_STORE, d)
     mySequence = {}
     if (d === 'H') {
       myRole = 'T'
-      localStorage.removeItem(ROLE_STORE)
     } else {
       myRole = (personType === 'tank') ? 'T' : null
     }
@@ -242,12 +239,24 @@
     document.getElementById('btn-difficulty-mythic').classList.toggle('active', difficulty === 'M')
   }
 
+  function setInitialSize() {
+    const storedScale = localStorage.getItem(SCALE_STORE);
+    
+    let scale = parseFloat(storedScale);
+
+    if(!scale) scale = 1;
+    else if(scale > MAX_SCALE) scale = MAX_SCALE;
+    else if(scale < MIN_SCALE) scale = MIN_SCALE; 
+
+    console.warn("test123", scale);
+
+    ipcRenderer.send('resize-startup', { scale, baseW: BASE_W })
+  }
+
   // ── Person type ────────────────────────────────────────
   function setPersonType(pt) {
     personType = pt
-    localStorage.setItem(PTYPE_STORE, pt)
     myRole = (pt === 'tank') ? 'T' : null
-    if (pt !== 'tank') localStorage.removeItem(ROLE_STORE)
     syncPersonButtons(); applyRoleState(); renderAll()
   }
 
@@ -270,7 +279,6 @@
   // ── Phase picker (R/B) ─────────────────────────────────
   function pickRole(r) {
     myRole = r
-    localStorage.setItem(ROLE_STORE, r)
     applyRoleState(); renderAll()
   }
 
@@ -368,7 +376,6 @@
     peerMap = {}
     if (difficulty === 'M' && personType === 'healer') {
       myRole = null
-      localStorage.removeItem(ROLE_STORE)
     }
     applyRoleState(); buildInputButtons(); renderAll()
     if (channel) channel.publish('reset', { id: MY_ID })
@@ -383,7 +390,6 @@
     }
 
     myRole = null
-    localStorage.removeItem(ROLE_STORE)
     applyRoleState(); 
     renderAll(); 
   }
@@ -493,7 +499,6 @@
         mySequence = {}
         if (difficulty === 'M' && personType === 'healer') {
           myRole = null
-          localStorage.removeItem(ROLE_STORE)
         }
         applyRoleState(); buildInputButtons(); renderAll()
       })
@@ -541,16 +546,15 @@
   s.onerror = () => setStatus('Failed to load Ably SDK')
   document.head.appendChild(s)
 
-  localStorage.removeItem(ROLE_STORE)
-
   if (difficulty === 'H') myRole = 'T'
-
+  
   syncDifficultyButtons()
   syncPersonButtons()
   syncLayoutButtons()
   syncSettingVisibility()
   applyRoleState()
   renderAll()
+  setInitialSize()
 </script>
 </body>
 </html>
