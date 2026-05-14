@@ -96,6 +96,7 @@
   const KEY_STORE    = 'overlay_ably_key'
   const ID_STORE     = 'overlay_leader_id'
   const SCALE_STORE  = 'overlay_scale'
+  const LAYOUT_STORE = 'overlay_layout'
 
   // Slot ownership by phase:
   //   T (Tank) owns slots 1 & 4
@@ -109,8 +110,6 @@
 
   // Allowed values for each persisted setting — anything else falls back to the default.
   // This protects against stale values in localStorage from previous versions of the app.
-  const ALLOWED_DIFF   = ['H', 'M']
-  const ALLOWED_PTYPE  = ['tank', 'healer']
   const ALLOWED_LAYOUT = ['line', 'clock']
 
   function readEnum(key, allowed, fallback) {
@@ -127,7 +126,7 @@
   let mode       = 'viewer'
   let difficulty = 'M'
   let personType = 'tank'
-  let layout     =  'line'
+  let layout     = readEnum(LAYOUT_STORE, ALLOWED_LAYOUT, 'line')
   let myRole     = null
   let settingsOpen = false
   let mySequence = {}
@@ -213,6 +212,7 @@
   // ── Layout (viewer-only) ───────────────────────────────
   function setLayout(l) {
     layout = l
+    localStorage.setItem(LAYOUT_STORE, l)
     syncLayoutButtons()
     renderAll()
   }
