@@ -25,7 +25,7 @@ app.whenReady().then(() => {
 
   win.loadFile('index.html')
 
-  win.webContents.openDevTools({ mode: 'detach' })
+  // win.webContents.openDevTools({ mode: 'detach' })
 
   win.setAlwaysOnTop(true, 'screen-saver')
   win.setMinimumSize(100, 60)
