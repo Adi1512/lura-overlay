@@ -37,4 +37,6 @@ for the input. If a Healer misclicks their realm the 'Clear Phase' button will l
 Whenever anyone clicks the 'Clear All' button, all inputs will be cleared, along with what realm the Healers have selected in preparation for the next Memory Game.
 Lastly, there is a Backspace button next to the symbol input for all users, this will undo the last input that you specifically have done.
 
+<img width="436" height="355" alt="image" src="https://github.com/user-attachments/assets/4b5e4d1d-816b-4699-a3d5-5b3397712e3c" />
+
 
